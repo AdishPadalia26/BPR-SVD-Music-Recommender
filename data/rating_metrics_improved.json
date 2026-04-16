@@ -1,0 +1,10 @@
+{
+  "model_mae": 0.6100642531042434,
+  "model_rmse": 0.947620423092674,
+  "baseline_mae": 0.7427676898430131,
+  "baseline_rmse": 0.9861202864566412,
+  "mae_improvement_pct": 17.866075564867007,
+  "rmse_improvement_pct": 3.904175169370675,
+  "test_rows": 43108,
+  "fallback_predictions": 26
+}

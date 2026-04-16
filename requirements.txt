@@ -1,0 +1,17 @@
+# Resonant - Recommender System Dependencies
+# Install with: pip install -r requirements.txt
+
+# Web Framework
+Flask>=3.0.0
+flask-cors>=4.0.0
+
+# Data Processing
+pandas>=2.0.0
+numpy>=1.24.0
+scipy>=1.10.0
+
+# Recommender System Library
+cornac>=2.0.0
+
+# Utilities
+tqdm>=4.0.0

@@ -1,0 +1,142 @@
+{
+  "min_test_items_active": 3,
+  "selected_config": "hybrid_70_20_10",
+  "all_users": {
+    "precision": 0.006045852559677361,
+    "recall": 0.04261295280311012,
+    "f_measure": 0.01017736801947462,
+    "ndcg": 0.028339937506812487,
+    "n_users": 27523,
+    "nonzero_precision_users": 1613
+  },
+  "active_users": {
+    "precision": 0.011390728476821191,
+    "recall": 0.02759480132450331,
+    "f_measure": 0.015595529801324504,
+    "ndcg": 0.023407052980132452,
+    "n_users": 3020,
+    "nonzero_precision_users": 310
+  },
+  "candidate_results": {
+    "bpr_only": {
+      "all_users": {
+        "precision": 0.005700686698397704,
+        "recall": 0.04081831559059696,
+        "f_measure": 0.009615594230280128,
+        "ndcg": 0.027217552592377285,
+        "n_users": 27523,
+        "nonzero_precision_users": 1522
+      },
+      "active_users": {
+        "precision": 0.0102317880794702,
+        "recall": 0.024484271523178808,
+        "f_measure": 0.013887615894039737,
+        "ndcg": 0.020676225165562914,
+        "n_users": 3020,
+        "nonzero_precision_users": 277
+      },
+      "config": {
+        "bpr": 1.0,
+        "svd": 0.0,
+        "pop": 0.0
+      },
+      "config_name": "bpr_only"
+    },
+    "bpr_pop": {
+      "all_users": {
+        "precision": 0.006002252661410456,
+        "recall": 0.04250992624350543,
+        "f_measure": 0.010101409730043963,
+        "ndcg": 0.028307266649711147,
+        "n_users": 27523,
+        "nonzero_precision_users": 1600
+      },
+      "active_users": {
+        "precision": 0.011291390728476822,
+        "recall": 0.02715254966887417,
+        "f_measure": 0.015370066225165561,
+        "ndcg": 0.022581556291390727,
+        "n_users": 3020,
+        "nonzero_precision_users": 306
+      },
+      "config": {
+        "bpr": 0.9,
+        "svd": 0.0,
+        "pop": 0.1
+      },
+      "config_name": "bpr_pop"
+    },
+    "hybrid_80_15_05": {
+      "all_users": {
+        "precision": 0.005849653017476293,
+        "recall": 0.04154048977219054,
+        "f_measure": 0.009863041819569086,
+        "ndcg": 0.027692333684554732,
+        "n_users": 27523,
+        "nonzero_precision_users": 1558
+      },
+      "active_users": {
+        "precision": 0.01076158940397351,
+        "recall": 0.02609897350993377,
+        "f_measure": 0.014737847682119205,
+        "ndcg": 0.022242880794701988,
+        "n_users": 3020,
+        "nonzero_precision_users": 290
+      },
+      "config": {
+        "bpr": 0.8,
+        "svd": 0.15,
+        "pop": 0.05
+      },
+      "config_name": "hybrid_80_15_05"
+    },
+    "hybrid_75_15_10": {
+      "all_users": {
+        "precision": 0.006053119209388513,
+        "recall": 0.04275828943065799,
+        "f_measure": 0.010193946880790611,
+        "ndcg": 0.028401529629764197,
+        "n_users": 27523,
+        "nonzero_precision_users": 1616
+      },
+      "active_users": {
+        "precision": 0.01132450331125828,
+        "recall": 0.027429271523178807,
+        "f_measure": 0.015500860927152318,
+        "ndcg": 0.023210728476821187,
+        "n_users": 3020,
+        "nonzero_precision_users": 310
+      },
+      "config": {
+        "bpr": 0.75,
+        "svd": 0.15,
+        "pop": 0.1
+      },
+      "config_name": "hybrid_75_15_10"
+    },
+    "hybrid_70_20_10": {
+      "all_users": {
+        "precision": 0.006045852559677361,
+        "recall": 0.04261295280311012,
+        "f_measure": 0.01017736801947462,
+        "ndcg": 0.028339937506812487,
+        "n_users": 27523,
+        "nonzero_precision_users": 1613
+      },
+      "active_users": {
+        "precision": 0.011390728476821191,
+        "recall": 0.02759480132450331,
+        "f_measure": 0.015595529801324504,
+        "ndcg": 0.023407052980132452,
+        "n_users": 3020,
+        "nonzero_precision_users": 310
+      },
+      "config": {
+        "bpr": 0.7,
+        "svd": 0.2,
+        "pop": 0.1
+      },
+      "config_name": "hybrid_70_20_10"
+    }
+  }
+}

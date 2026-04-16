@@ -1,0 +1,1228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BPR-SVD-Music-Recommender</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎵</text></svg>">
+    <style>
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #0a0a0f;
+            --surface: #111118;
+            --surface-elevated: #1a1a24;
+            --border: rgba(255, 255, 255, 0.08);
+            --primary: #7c6cf8;
+            --primary-glow: rgba(124, 108, 248, 0.3);
+            --secondary: #06b6d4;
+            --success: #10b981;
+            --text: #f1f0ff;
+            --text-muted: #8b8aa8;
+            --text-faint: #4a4965;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            background-image: 
+                linear-gradient(rgba(124, 108, 248, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(124, 108, 248, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* Header */
+        header {
+            height: 64px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            background: rgba(10, 10, 15, 0.8);
+            backdrop-filter: blur(20px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo svg {
+            width: 32px;
+            height: 32px;
+            color: var(--primary);
+        }
+
+        .logo h1 {
+            font-size: 18px;
+            font-weight: 600;
+            background: linear-gradient(135deg, var(--text) 0%, var(--primary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header-center {
+            font-size: 13px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .header-center span {
+            color: var(--primary);
+        }
+
+        .header-stats {
+            display: flex;
+            gap: 12px;
+        }
+
+        .stat-badge {
+            padding: 6px 12px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .stat-badge .label {
+            color: var(--text-faint);
+            margin-right: 4px;
+        }
+
+        .stat-badge .value {
+            color: var(--secondary);
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 80px 24px 60px;
+            text-align: center;
+        }
+
+        .hero h2 {
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, var(--text) 0%, var(--primary) 50%, var(--secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero p {
+            font-size: 18px;
+            color: var(--text-muted);
+            margin-bottom: 40px;
+        }
+
+        /* Search */
+        .search-container {
+            max-width: 600px;
+            margin: 0 auto 24px;
+            position: relative;
+        }
+
+        .search-wrapper {
+            position: relative;
+            display: flex;
+            gap: 12px;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 16px 24px;
+            font-size: 16px;
+            font-family: 'Inter', sans-serif;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 50px;
+            color: var(--text);
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .search-input::placeholder {
+            color: var(--text-faint);
+        }
+
+        .search-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px var(--primary-glow), 0 0 40px var(--primary-glow);
+        }
+
+        .search-btn {
+            padding: 16px 32px;
+            font-size: 15px;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--primary) 0%, #9584f2 100%);
+            border: none;
+            border-radius: 50px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .search-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px var(--primary-glow);
+        }
+
+        .search-btn:active {
+            transform: translateY(0);
+        }
+
+        .sample-users {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .sample-label {
+            font-size: 13px;
+            color: var(--text-faint);
+        }
+
+        .sample-chip {
+            padding: 6px 14px;
+            font-size: 12px;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .sample-chip:hover {
+            background: var(--surface-elevated);
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        /* Main Content */
+        .main-content {
+            display: none;
+            padding: 0 24px 60px;
+        }
+
+        .main-content.visible {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: 380px 1fr;
+            gap: 24px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+        }
+
+        /* User Profile Card */
+        .user-profile {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .user-profile::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .user-id-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 24px;
+            padding: 12px 16px;
+            background: var(--surface-elevated);
+            border-radius: 10px;
+            border: 1px solid var(--border);
+        }
+
+        .user-id {
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 13px;
+            color: var(--primary);
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .copy-btn {
+            background: none;
+            border: none;
+            color: var(--text-faint);
+            cursor: pointer;
+            padding: 4px;
+            display: flex;
+            transition: color 0.2s;
+        }
+
+        .copy-btn:hover {
+            color: var(--text);
+        }
+
+        .copy-btn.copied {
+            color: var(--success);
+        }
+
+        .user-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .user-stat {
+            text-align: center;
+            padding: 12px 8px;
+            background: var(--surface-elevated);
+            border-radius: 10px;
+        }
+
+        .user-stat .value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .user-stat .label {
+            font-size: 11px;
+            color: var(--text-faint);
+            margin-top: 4px;
+        }
+
+        .metrics-section h4 {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+        }
+
+        .metric-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .metric-row .label {
+            width: 80px;
+            font-size: 13px;
+            color: var(--text-faint);
+        }
+
+        .metric-bar-container {
+            flex: 1;
+            height: 6px;
+            background: var(--surface-elevated);
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 0 12px;
+        }
+
+        .metric-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 3px;
+            transition: width 1s ease;
+        }
+
+        .metric-row .value {
+            width: 50px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--secondary);
+            text-align: right;
+        }
+
+        /* Rating Distribution Chart */
+        .chart-container {
+            margin-top: 24px;
+            height: 180px;
+        }
+
+        /* Recommendations Panel */
+        .recommendations-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .recs-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .recs-header h3 {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .badge {
+            padding: 4px 10px;
+            font-size: 11px;
+            font-weight: 600;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 20px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .recommendations-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .rec-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            opacity: 0;
+            transform: translateX(-20px);
+            cursor: pointer;
+            overflow: hidden;
+        }
+
+        .rec-card.visible {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .rec-card:hover {
+            background: var(--surface-elevated);
+            border-color: var(--primary);
+            box-shadow: 0 4px 20px rgba(124, 108, 248, 0.15);
+        }
+
+        .rec-card:first-child {
+            background: linear-gradient(135deg, rgba(124, 108, 248, 0.1), rgba(6, 182, 212, 0.05));
+            border-color: var(--primary);
+        }
+
+        .rec-card.expanded {
+            background: var(--surface-elevated);
+            border-color: var(--primary);
+        }
+
+        .rec-card-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px 20px;
+        }
+
+        .rec-card-body {
+            display: none;
+            padding: 0 20px 16px 76px;
+            border-top: 1px solid var(--border);
+            margin-top: 0;
+        }
+
+        .rec-card.expanded .rec-card-body {
+            display: block;
+        }
+
+        .rec-description {
+            font-size: 13px;
+            color: var(--text-muted);
+            line-height: 1.6;
+            padding: 12px 0;
+        }
+
+        .rec-description-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-faint);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+
+        .expand-icon {
+            color: var(--text-faint);
+            transition: transform 0.3s ease;
+            margin-left: auto;
+        }
+
+        .rec-card.expanded .expand-icon {
+            transform: rotate(180deg);
+        }
+
+        .rec-rank {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: 700;
+            background: var(--surface-elevated);
+            border-radius: 10px;
+            color: var(--text-muted);
+        }
+
+        .rec-card:first-child .rec-rank {
+            background: var(--primary);
+            color: white;
+        }
+
+        .rec-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .rec-item-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 4px;
+            line-height: 1.3;
+        }
+
+        .rec-item-name.fallback {
+            font-weight: 400;
+            color: #6b7280;
+            font-style: italic;
+        }
+
+        .rec-item-id {
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 11px;
+            color: var(--text-faint);
+        }
+
+        .rec-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .rec-meta-chip {
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: var(--surface-elevated);
+            color: var(--text-muted);
+            font-size: 11px;
+            border: 1px solid var(--border);
+        }
+
+        .rec-score {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            margin-top: 10px;
+        }
+
+        .rec-score .stars {
+            color: #fbbf24;
+            font-size: 12px;
+            letter-spacing: 1px;
+        }
+
+        .rec-score .rating-value {
+            font-size: 11px;
+            color: var(--secondary);
+        }
+
+        .no-metadata {
+            font-size: 11px;
+            color: #6b7280;
+            font-style: italic;
+        }
+
+        .rec-badge {
+            padding: 4px 10px;
+            font-size: 10px;
+            font-weight: 600;
+            background: var(--success);
+            border-radius: 4px;
+            color: white;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Stats Bar */
+        .stats-bar {
+            display: none;
+            padding: 24px;
+            margin-top: 40px;
+            border-top: 1px solid var(--border);
+        }
+
+        .stats-bar.visible {
+            display: block;
+            animation: fadeIn 0.5s ease 0.3s both;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .stat-card {
+            padding: 20px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .stat-card .label {
+            font-size: 12px;
+            color: var(--text-faint);
+            margin-bottom: 8px;
+        }
+
+        .stat-card .value {
+            font-size: 32px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--text), var(--primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-card .sub-values {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-top: 8px;
+            font-size: 11px;
+        }
+
+        .stat-card .sub-values span {
+            color: var(--text-faint);
+        }
+
+        .stat-card .sub-values strong {
+            color: var(--secondary);
+        }
+
+        /* Loading State */
+        .skeleton {
+            background: linear-gradient(90deg, var(--surface) 25%, var(--surface-elevated) 50%, var(--surface) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            border-radius: 8px;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        .skeleton-card {
+            height: 80px;
+            margin-bottom: 12px;
+        }
+
+        /* Error State */
+        .error-container {
+            display: none;
+            text-align: center;
+            padding: 60px 24px;
+        }
+
+        .error-container.visible {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .error-icon {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 24px;
+            color: var(--text-faint);
+        }
+
+        .error-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .error-message {
+            color: var(--text-muted);
+            margin-bottom: 24px;
+        }
+
+        .error-btn {
+            padding: 12px 24px;
+            font-size: 14px;
+            font-weight: 500;
+            font-family: 'Inter', sans-serif;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .error-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            header {
+                flex-direction: column;
+                height: auto;
+                padding: 16px;
+                gap: 12px;
+            }
+
+            .header-center {
+                order: -1;
+            }
+
+            .hero h2 {
+                font-size: 32px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .hero {
+                padding: 40px 16px;
+            }
+
+            .search-wrapper {
+                flex-direction: column;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M9 12h6M12 9v6"/>
+                <path d="M8 8v8M16 8v8"/>
+            </svg>
+            <h1>BPR-SVD-Music-Recommender</h1>
+        </div>
+        <div class="header-center">
+            BPR-SVD-Music-Recommender
+        </div>
+        <div class="header-stats">
+            <div class="stat-badge">
+                <span class="label">MAE:</span>
+                <span class="value" id="header-mae">0.6392</span>
+            </div>
+            <div class="stat-badge">
+                <span class="label">NDCG:</span>
+                <span class="value" id="header-ndcg">0.0927</span>
+            </div>
+        </div>
+    </header>
+
+    <section class="hero">
+        <h2>Discover Your Perfect Instrument</h2>
+        <p>AI-powered recommendations using Bayesian Personalized Ranking</p>
+        
+        <div class="search-container">
+            <div class="search-wrapper">
+                <input type="text" class="search-input" id="userInput" placeholder="Enter Customer ID..." autocomplete="off">
+                <button class="search-btn" id="searchBtn">
+                    <span>Get Recommendations</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="sample-users">
+            <span class="sample-label">Try these:</span>
+            <div id="sampleChips"></div>
+        </div>
+    </section>
+
+    <div class="error-container" id="errorContainer">
+        <svg class="error-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M16 16s-1.5-2-4-2-4 2-4 2"/>
+            <line x1="9" y1="9" x2="9.01" y2="9"/>
+            <line x1="15" y1="9" x2="15.01" y2="9"/>
+        </svg>
+        <h3 class="error-title">User Not Found</h3>
+        <p class="error-message">We couldn't find that customer ID. Try one of our sample users below.</p>
+        <button class="error-btn" id="trySampleBtn">Try a Sample User</button>
+    </div>
+
+    <main class="main-content" id="mainContent">
+        <div class="content-grid">
+            <!-- Left Panel: User Profile -->
+            <div class="left-panel">
+                <div class="card user-profile">
+                    <div class="card-header">
+                        <span class="card-title">User Profile</span>
+                    </div>
+                    
+                    <div class="user-id-container">
+                        <span class="user-id" id="displayUserId">-</span>
+                        <button class="copy-btn" id="copyBtn" title="Copy to clipboard">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <div class="user-stats">
+                        <div class="user-stat">
+                            <div class="value" id="totalRatings">-</div>
+                            <div class="label">Ratings</div>
+                        </div>
+                        <div class="user-stat">
+                            <div class="value" id="avgRating">-</div>
+                            <div class="label">Avg Rating</div>
+                        </div>
+                        <div class="user-stat">
+                            <div class="value" id="memberSince">-</div>
+                            <div class="label">Member Since</div>
+                        </div>
+                    </div>
+
+                    <div class="metrics-section">
+                        <h4>Model Performance Metrics</h4>
+                        <div class="metric-row">
+                            <span class="label">Precision</span>
+                            <div class="metric-bar-container">
+                                <div class="metric-bar" id="precisionBar" style="width: 0%"></div>
+                            </div>
+                            <span class="value" id="precisionValue">-</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="label">Recall</span>
+                            <div class="metric-bar-container">
+                                <div class="metric-bar" id="recallBar" style="width: 0%"></div>
+                            </div>
+                            <span class="value" id="recallValue">-</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="label">NDCG</span>
+                            <div class="metric-bar-container">
+                                <div class="metric-bar" id="ndcgBar" style="width: 0%"></div>
+                            </div>
+                            <span class="value" id="ndcgValue">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-top: 20px;">
+                    <div class="card-header">
+                        <span class="card-title">Rating Distribution</span>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="ratingChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel: Recommendations -->
+            <div class="recommendations-panel">
+                <div class="recs-header">
+                    <h3>Top 10 Recommendations</h3>
+                    <span class="badge">LIVE</span>
+                </div>
+                <div class="recommendations-list" id="recommendationsList"></div>
+            </div>
+        </div>
+    </main>
+
+    <section class="stats-bar" id="statsBar">
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="label">MAE</div>
+                <div class="value" id="stats-mae">-</div>
+                <div class="sub-values">
+                    <span>Lower is better</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="label">RMSE</div>
+                <div class="value" id="stats-rmse">-</div>
+                <div class="sub-values">
+                    <span>Lower is better</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="label">Precision@10</div>
+                <div class="value" id="stats-precision">-</div>
+                <div class="sub-values">
+                    <span>Active Users</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="label">NDCG@10</div>
+                <div class="value" id="stats-ndcg">-</div>
+                <div class="sub-values">
+                    <span>Active Users</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        let ratingChart = null;
+
+        async function fetchSampleUsers() {
+            try {
+                const res = await fetch('/api/sample_users');
+                const data = await res.json();
+                const container = document.getElementById('sampleChips');
+                container.innerHTML = data.users.map(user => 
+                    `<button class="sample-chip" onclick="searchUser('${user}')">${user.slice(0, 12)}...</button>`
+                ).join('');
+            } catch (e) {
+                console.error('Failed to load sample users:', e);
+            }
+        }
+
+        async function fetchStats() {
+            try {
+                const res = await fetch('/api/stats');
+                const data = await res.json();
+                document.getElementById('header-mae').textContent = data.model_mae.toFixed(4);
+                document.getElementById('header-ndcg').textContent = data.ndcg_active.toFixed(4);
+                document.getElementById('stats-mae').textContent = data.model_mae.toFixed(4);
+                document.getElementById('stats-rmse').textContent = data.model_rmse.toFixed(4);
+                document.getElementById('stats-precision').textContent = data.precision_active.toFixed(4);
+                document.getElementById('stats-ndcg').textContent = data.ndcg_active.toFixed(4);
+            } catch (e) {
+                console.error('Failed to load stats:', e);
+            }
+        }
+
+        async function searchUser(userId) {
+            if (!userId.trim()) return;
+
+            document.getElementById('mainContent').classList.remove('visible');
+            document.getElementById('statsBar').classList.remove('visible');
+            document.getElementById('errorContainer').classList.remove('visible');
+            
+            document.getElementById('searchBtn').innerHTML = '<span>Searching...</span>';
+
+            try {
+                const [userRes, recsRes, ratingsRes] = await Promise.all([
+                    fetch(`/api/user/${userId}`),
+                    fetch(`/api/recommendations/${userId}`),
+                    fetch(`/api/user/${userId}/ratings`)
+                ]);
+
+                if (!userRes.ok || !recsRes.ok) {
+                    throw new Error('User not found');
+                }
+
+                const userData = await userRes.json();
+                const recsData = await recsRes.json();
+                const ratingsData = await ratingsRes.json();
+
+                displayUserProfile(userData);
+                displayRecommendations(recsData.recommendations);
+                displayRatingChart(ratingsData.distribution);
+
+                document.getElementById('mainContent').classList.add('visible');
+                document.getElementById('statsBar').classList.add('visible');
+            } catch (e) {
+                document.getElementById('errorContainer').classList.add('visible');
+            } finally {
+                document.getElementById('searchBtn').innerHTML = '<span>Get Recommendations</span>';
+            }
+        }
+
+        function displayUserProfile(data) {
+            document.getElementById('displayUserId').textContent = data.user_id;
+            document.getElementById('totalRatings').textContent = animateNumber(data.total_ratings);
+            document.getElementById('avgRating').textContent = data.avg_rating.toFixed(1);
+            document.getElementById('memberSince').textContent = data.member_since;
+
+            const precision = data.precision;
+            const recall = data.recall;
+            const ndcg = data.ndcg;
+
+                setTimeout(() => {
+                    if (precision !== null && precision !== undefined) {
+                        document.getElementById('precisionBar').style.width = `${Math.min(precision * 100, 100)}%`;
+                        document.getElementById('precisionValue').textContent = precision.toFixed(3);
+                    } else {
+                        document.getElementById('precisionBar').style.width = '0%';
+                        document.getElementById('precisionValue').textContent = 'N/A';
+                    }
+
+                    if (recall !== null && recall !== undefined) {
+                        document.getElementById('recallBar').style.width = `${Math.min(recall * 100, 100)}%`;
+                        document.getElementById('recallValue').textContent = recall.toFixed(3);
+                    } else {
+                        document.getElementById('recallBar').style.width = '0%';
+                        document.getElementById('recallValue').textContent = 'N/A';
+                    }
+
+                    if (ndcg !== null && ndcg !== undefined) {
+                        document.getElementById('ndcgBar').style.width = `${Math.min(ndcg * 100, 100)}%`;
+                        document.getElementById('ndcgValue').textContent = ndcg.toFixed(3);
+                    } else {
+                        document.getElementById('ndcgBar').style.width = '0%';
+                        document.getElementById('ndcgValue').textContent = 'N/A';
+                    }
+                }, 300);
+        }
+
+        function displayRecommendations(recommendations) {
+            const container = document.getElementById('recommendationsList');
+            container.innerHTML = '';
+
+            recommendations.forEach((rec, index) => {
+                const card = document.createElement('div');
+                card.className = 'rec-card';
+
+                const hasMetadata = rec.has_metadata;
+                const titleClass = hasMetadata ? '' : 'fallback';
+
+                const chips = [];
+                if (rec.brand && rec.brand !== 'Unknown brand' && rec.brand !== 'N/A') {
+                    chips.push(`<span class="rec-meta-chip">${rec.brand}</span>`);
+                }
+                if (rec.category && rec.category !== 'N/A') {
+                    chips.push(`<span class="rec-meta-chip">${rec.category}</span>`);
+                }
+                if (rec.price && rec.price !== 'N/A' && rec.price !== 'Price unavailable') {
+                    chips.push(`<span class="rec-meta-chip">${rec.price}</span>`);
+                }
+
+                const chipsHtml = chips.length > 0
+                    ? `<div class="rec-meta">${chips.join('')}</div>`
+                    : `<div class="no-metadata">Metadata unavailable</div>`;
+
+                let starsHtml = '';
+                if (rec.predicted_rating !== null && rec.predicted_rating !== undefined) {
+                    const stars = '★'.repeat(Math.round(rec.predicted_rating));
+                    starsHtml = `<div class="rec-score"><span class="stars">${stars}</span><span class="rating-value">${rec.predicted_rating.toFixed(1)}</span></div>`;
+                }
+
+                const descriptionHtml = rec.description
+                    ? `<div class="rec-description-label">Description</div><div class="rec-description">${rec.description}</div>`
+                    : '';
+
+                card.innerHTML = `
+                    <div class="rec-card-header">
+                        <div class="rec-rank">#${rec.rank}</div>
+                        <div class="rec-info">
+                            <div class="rec-item-name ${titleClass}">${rec.product_title}</div>
+                            <div class="rec-item-id">${rec.item_id}</div>
+                            ${chipsHtml}
+                            ${starsHtml}
+                        </div>
+                        ${rec.rank === 1 ? '<span class="rec-badge">Top Pick</span>' : ''}
+                        <svg class="expand-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </div>
+                    <div class="rec-card-body">
+                        ${descriptionHtml}
+                    </div>
+                `;
+
+                card.addEventListener('click', () => {
+                    card.classList.toggle('expanded');
+                });
+
+                container.appendChild(card);
+
+                setTimeout(() => {
+                    card.classList.add('visible');
+                }, index * 100);
+            });
+        }
+
+        function displayRatingChart(distribution) {
+            const ctx = document.getElementById('ratingChart').getContext('2d');
+            
+            if (ratingChart) {
+                ratingChart.destroy();
+            }
+
+            const labels = ['1 Star', '2 Stars', '3 Stars', '4 Stars', '5 Stars'];
+            const data = [distribution['1'] || 0, distribution['2'] || 0, distribution['3'] || 0, distribution['4'] || 0, distribution['5'] || 0];
+
+            ratingChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: [
+                            'rgba(239, 68, 68, 0.6)',
+                            'rgba(251, 146, 60, 0.6)',
+                            'rgba(234, 179, 8, 0.6)',
+                            'rgba(132, 204, 22, 0.6)',
+                            'rgba(34, 197, 94, 0.6)'
+                        ],
+                        borderColor: [
+                            'rgba(239, 68, 68, 1)',
+                            'rgba(251, 146, 60, 1)',
+                            'rgba(234, 179, 8, 1)',
+                            'rgba(132, 204, 22, 1)',
+                            'rgba(34, 197, 94, 1)'
+                        ],
+                        borderWidth: 1,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#4a4965', font: { size: 10 } }
+                        },
+                        y: {
+                            grid: { color: 'rgba(255,255,255,0.05)' },
+                            ticks: { color: '#4a4965', font: { size: 10 } }
+                        }
+                    }
+                }
+            });
+        }
+
+        function animateNumber(target) {
+            return target;
+        }
+
+        // Event Listeners
+        document.getElementById('searchBtn').addEventListener('click', () => {
+            const userId = document.getElementById('userInput').value.trim();
+            searchUser(userId);
+        });
+
+        document.getElementById('userInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const userId = e.target.value.trim();
+                searchUser(userId);
+            }
+        });
+
+        document.getElementById('copyBtn').addEventListener('click', async () => {
+            const userId = document.getElementById('displayUserId').textContent;
+            try {
+                await navigator.clipboard.writeText(userId);
+                const btn = document.getElementById('copyBtn');
+                btn.classList.add('copied');
+                btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>`;
+                setTimeout(() => {
+                    btn.classList.remove('copied');
+                    btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`;
+                }, 2000);
+            } catch (e) {
+                console.error('Failed to copy:', e);
+            }
+        });
+
+        document.getElementById('trySampleBtn').addEventListener('click', () => {
+            const chips = document.querySelectorAll('.sample-chip');
+            if (chips.length > 0) {
+                const firstSample = chips[0].textContent.replace('...', '');
+                const allChips = Array.from(document.querySelectorAll('.sample-chip'));
+                const fullSample = allChips.find(c => c.textContent.startsWith(firstSample))?.textContent.replace('...', '') || firstSample;
+                searchUser(fullSample);
+            }
+        });
+
+        // Initialize
+        fetchSampleUsers();
+        fetchStats();
+    </script>
+</body>
+</html>
