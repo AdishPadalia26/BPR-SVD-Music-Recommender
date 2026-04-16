@@ -1,0 +1,12 @@
+
+R_pred.npy
+R_pred_biased.npy
+Video_Games_5.json
+Musical_Instruments_5.json
+
+# Ignore large datasets and model files
+R_pred.npy
+R_pred_biased.npy
+Video_Games_5.json
+Musical_Instruments_5.json
+*.gz
