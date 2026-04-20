@@ -26,6 +26,7 @@
 - [Dataset](#dataset)
 - [Technical Deep Dive](#technical-deep-dive)
 - [Future Enhancements](#future-enhancements)
+- [Team](#team)
 - [License](#license)
 
 ---
@@ -275,9 +276,9 @@ http://localhost:5001
 ### Demo Interface Guide
 
 ```
-┌────────────────────────────────────────────────────────────────┐
+┌────────────────────────────────────────────────────────────────[...]
 │ [Logo] RecSys Demo    Musical Instruments · BPR + Bias-SVD  MAE │
-├────────────────────────────────────────────────────────────────┤
+├────────────────────────────────────────────────────────────────[...]
 │                                                                │
 │               Discover Your Perfect Instrument                 │
 │        AI-powered recommendations using Bayesian               │
@@ -290,7 +291,7 @@ http://localhost:5001
 │           Try these:  [A100S1JQ...] [AT1TVEC...]               │
 │                        [A1K91RAC...] [A1431CD3...]             │
 │                                                                │
-├────────────────────────────────────────────────────────────────┤
+├────────────────────────────────────────────────────────────────[...]
 │                     RESULTS (after search)                     │
 │ ┌────────────────┐  ┌─────────────────────────────────────────┐│
 │ │ USER PROFILE   │  │  TOP 10 RECOMMENDATIONS         [LIVE] ││
@@ -305,9 +306,9 @@ http://localhost:5001
 │ │ Rating Dist:   │  │  │ #2  Another Product       ▼    │    ││
 │ │ [Chart.js]     │  │  │     ★★★★☆  4.8                 │    ││
 │ └────────────────┘  └─────────────────────────────────────────┘│
-├────────────────────────────────────────────────────────────────┤
+├────────────────────────────────────────────────────────────────[...]
 │  MAE: 0.64    RMSE: 0.99    Precision@10: 0.039    NDCG@10: 0.093│
-└────────────────────────────────────────────────────────────────┘
+└────────────────────────────────────────────────────────────────[...]
 ```
 
 ### Sample User IDs
@@ -497,6 +498,14 @@ The demo uses `meta_Musical_Instruments.json.gz` which contains:
 - [ ] Integration with e-commerce platform
 - [ ] Multi-modal recommendations (text + images)
 - [ ] Deep learning models (NCF, Transformer-based)
+
+---
+
+## Team
+
+- Adish Padalia
+- Saumya Desai
+- Aryan Dave
 
 ---
 
