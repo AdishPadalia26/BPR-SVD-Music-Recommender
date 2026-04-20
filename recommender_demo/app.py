@@ -24,6 +24,7 @@ train_df = None
 test_df = None
 recommendations_df = None
 sample_users = []
+metadata_users = []
 product_catalog = {}
 rating_metrics = {}
 recommendation_metrics = {}
@@ -88,9 +89,17 @@ def load_product_catalog():
     return catalog
 
 
+def parse_recommended_items(value):
+    if isinstance(value, list):
+        return [str(item).strip() for item in value if str(item).strip()]
+    if pd.isna(value):
+        return []
+    return [item.strip() for item in str(value).split(",") if item.strip()]
+
+
 def load_data():
     global train_df, test_df, recommendations_df, sample_users
-    global product_catalog, rating_metrics, recommendation_metrics
+    global metadata_users, product_catalog, rating_metrics, recommendation_metrics
 
     print("Loading data files...")
 
@@ -102,30 +111,17 @@ def load_data():
     recommendation_metrics = load_json(os.path.join(DATA_DIR, "recommendation_metrics_improved.json"))
     product_catalog = load_product_catalog()
 
-    valid_items = set(product_catalog.keys())
-    print(f"Filtering recommendations to only include items with metadata...")
+    recommendations_df["recommended_items"] = recommendations_df["recommended_items"].apply(parse_recommended_items)
+    recommendations_df["has_metadata"] = recommendations_df["recommended_items"].apply(
+        lambda item_ids: any(item_id in product_catalog for item_id in item_ids)
+    )
 
-    filtered_rows = []
-    for _, row in recommendations_df.iterrows():
-        item_ids = [x.strip() for x in str(row.get("recommended_items", "")).split(",") if x.strip()]
-
-        valid_item_ids = [iid for iid in item_ids if iid in valid_items]
-
-        if len(valid_item_ids) >= 1:
-            filtered_rows.append({
-                "user_id": row["user_id"],
-                "recommended_items": valid_item_ids,
-                "precision": row.get("precision"),
-                "recall": row.get("recall"),
-                "f_measure": row.get("f_measure"),
-                "ndcg": row.get("ndcg"),
-            })
-
-    recommendations_df = pd.DataFrame(filtered_rows)
-    sample_users = recommendations_df["user_id"].dropna().unique()[:100].tolist()
+    metadata_users = recommendations_df[recommendations_df["has_metadata"]]["user_id"].dropna().unique().tolist()
+    sample_users = metadata_users[:100]
 
     print(f"Loaded {len(train_df):,} training ratings")
     print(f"Filtered to {len(recommendations_df):,} users with at least 1 valid recommendation")
+    print(f"Users with recommendation metadata: {len(metadata_users):,}")
     print(f"Sample users available: {len(sample_users):,}")
 
 
@@ -158,7 +154,7 @@ def get_model_stats():
 
 def get_product_info(item_id):
     info = product_catalog.get(item_id, {})
-    if info:
+    if info and info.get("title"):
         return {
             "item_id": item_id,
             "product_title": info.get("title"),
@@ -170,7 +166,7 @@ def get_product_info(item_id):
         }
     return {
         "item_id": item_id,
-        "product_title": f"Musical Instrument · {item_id}",
+        "product_title": f"Product {item_id}",
         "brand": None,
         "category": None,
         "price": None,
@@ -192,7 +188,9 @@ def stats():
 @app.route("/api/sample_users")
 def sample_users_api():
     random.seed(42)
-    users_with_hits = recommendations_df[recommendations_df["precision"] > 0]["user_id"].dropna().unique().tolist()
+    users_with_hits = recommendations_df[
+        (recommendations_df["precision"] > 0) & (recommendations_df["has_metadata"])
+    ]["user_id"].dropna().unique().tolist()
     source_users = users_with_hits if users_with_hits else sample_users
     samples = random.sample(source_users, min(6, len(source_users)))
     return jsonify({"users": samples})
@@ -250,29 +248,47 @@ def get_recommendations(user_id):
         return jsonify({"error": "No recommendations found for user", "user_id": user_id}), 404
 
     row = user_recs.iloc[0]
-    item_ids = row.get("recommended_items", [])
+    item_ids = parse_recommended_items(row.get("recommended_items", []))
 
-    recommendations = []
-    for rank, item_id in enumerate(item_ids[:10], 1):
+    raw_recommendations = []
+    for rank, item_id in enumerate(item_ids, 1):
         product_info = get_product_info(item_id)
 
         predicted_rating = round(5.0 - (rank - 1) * 0.1, 1)
 
-        recommendations.append(
+        raw_recommendations.append(
             {
-                "rank": rank,
+                "original_rank": rank,
                 "item_id": item_id,
                 "product_title": product_info["product_title"],
                 "brand": product_info["brand"],
                 "category": product_info["category"],
                 "price": product_info["price"],
                 "description": product_info.get("description", ""),
-                "has_metadata": True,
+                "has_metadata": product_info["has_metadata"],
                 "predicted_rating": predicted_rating,
             }
         )
 
-    return jsonify({"recommendations": recommendations})
+    metadata_first = [rec for rec in raw_recommendations if rec["has_metadata"]]
+    fallback_items = [rec for rec in raw_recommendations if not rec["has_metadata"]]
+
+    selected = metadata_first[:10] if metadata_first else raw_recommendations[:10]
+    if metadata_first and len(selected) < 10:
+        selected.extend(fallback_items[: 10 - len(selected)])
+
+    recommendations = []
+    for display_rank, rec in enumerate(selected, 1):
+        rec["rank"] = display_rank
+        recommendations.append(rec)
+
+    return jsonify(
+        {
+            "recommendations": recommendations,
+            "metadata_available_count": len(metadata_first),
+            "showing_metadata_prioritized": bool(metadata_first),
+        }
+    )
 
 
 @app.route("/api/user/<user_id>/ratings")

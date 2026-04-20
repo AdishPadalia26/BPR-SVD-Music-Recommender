@@ -1080,7 +1080,7 @@
 
                 const chipsHtml = chips.length > 0
                     ? `<div class="rec-meta">${chips.join('')}</div>`
-                    : `<div class="no-metadata">Metadata unavailable</div>`;
+                    : '';
 
                 let starsHtml = '';
                 if (rec.predicted_rating !== null && rec.predicted_rating !== undefined) {
@@ -1090,7 +1090,9 @@
 
                 const descriptionHtml = rec.description
                     ? `<div class="rec-description-label">Description</div><div class="rec-description">${rec.description}</div>`
-                    : '';
+                    : (!hasMetadata
+                        ? `<div class="no-metadata">Catalog metadata isn't available for this recommendation yet.</div>`
+                        : '');
 
                 card.innerHTML = `
                     <div class="rec-card-header">
